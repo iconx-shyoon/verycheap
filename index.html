@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="필요한 물건은 가장 싸게, 안 쓰는 물건은 가장 쉽게 현금으로. VeryCheap 데모">
+<script src="config.js"></script>
+<title>VeryCheap 데모</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: sticky top bar + single content column (max 1180px); phone = bottom tab bar */
+:root{
+  --bg:#101014; --card:#1c1c22; --card2:#26262e; --line:#2c2c35;
+  --fg:#f4f4f6; --sub:#a6a6b0; --mute:#7c7c87;
+  --blue:#2f7bf0; --blueInk:#7fb0ff; --good:#ff5a65; --goodBg:#3a1d22; --used:#ffbf80; --up:#6f9dff;
+  --font:'Noto Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blueInk);outline-offset:2px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(16,16,20,.92);backdrop-filter:blur(10px);border-bottom:1px solid #1d1d24}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.topin{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:21px;letter-spacing:-.6px;text-decoration:none}
+.nav{display:flex;gap:4px}
+.nav a{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:10px;text-decoration:none;color:var(--sub);font-weight:700;font-size:15px}
+.nav a[aria-current="page"]{color:var(--fg);background:var(--card)}
+.nav svg{display:none}
+.src{margin-left:auto;font-size:12px;color:var(--sub);background:var(--card);border-radius:999px;padding:6px 12px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+.src b{color:var(--used);font-weight:700}
+main{padding-block:24px 64px}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.3px}
+.h1{font-size:26px;font-weight:800}
+.h2{font-size:19px;font-weight:800}
+.muted{color:var(--sub)}
+.small{font-size:13px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.card{background:var(--card);border-radius:20px;padding:20px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chip{flex:none;min-height:38px;padding:0 15px;border-radius:999px;border:0;background:var(--card);color:#cfcfd6;font-weight:700;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.seg{display:inline-flex;background:var(--card2);border-radius:11px;padding:3px}
+.seg button{min-height:34px;padding:0 12px;border:0;border-radius:9px;background:transparent;color:var(--sub);font-weight:700;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:#4a4a55;color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:0 18px;border-radius:14px;border:0;background:var(--card2);font-weight:700;font-size:15px;cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.block{width:100%}
+.tag{display:inline-flex;align-items:center;font-size:12px;font-weight:700;border-radius:7px;padding:2px 7px;background:var(--card2);color:#cfcfd6;white-space:nowrap}
+.tag.good{background:var(--goodBg);color:#ff9aa2}
+.tag.hot{background:#e5313f;color:#fff}
+.tag.new{background:#1b2a45;color:var(--blueInk)}
+.tag.used{background:#45301c;color:var(--used)}
+.good{color:var(--good)} .up{color:var(--up)}
+.search{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:0 16px;min-height:50px;flex:1 1 280px}
+.search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--fg);font:inherit;font-size:15px}
+.thumb{position:relative;border-radius:18px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none}
+.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.thumb svg{width:46%;height:46%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px 16px}
+.pcard{text-decoration:none;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pcard .thumb{aspect-ratio:1/1;width:100%;max-width:100%}
+.pcard .nm{font-size:15px;color:#d6d6dd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard .pr{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.pcard .pr b{font-size:19px;font-weight:800}
+.pcard .ov{position:absolute;left:10px;top:10px;display:flex;gap:4px;flex-wrap:wrap}
+.lbl{font-size:12px;font-weight:700}
+.lbl.n{color:var(--blueInk)} .lbl.u{color:var(--used)}
+.sec{display:flex;flex-direction:column;gap:14px}
+.sechead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.hscroll{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none}
+.hscroll::-webkit-scrollbar,.chips::-webkit-scrollbar{display:none}
+.hscroll>*{scroll-snap-align:start}
+.hero2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px}
+.act{background:var(--card);border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:10px;text-decoration:none;min-width:0}
+.act .eyebrow{font-size:13px;font-weight:800;letter-spacing:.04em}
+.act.buy .eyebrow{color:var(--blueInk)} .act.sell .eyebrow{color:var(--used)}
+.act .cash{font-size:30px;font-weight:800;letter-spacing:-.8px}
+.act .search{background:var(--card2);flex:none;margin-top:6px}
+.act.sell .btn{align-self:flex-start;margin-top:auto}
+.rec{background:var(--card);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:8px;border:2px solid var(--blue)}
+.sellbox{background:#2a2117;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:10px}
+@media (max-width:860px){.hero2{grid-template-columns:minmax(0,1fr)}}
+.rcard{flex:none;width:300px;max-width:85vw;background:var(--card);border-radius:20px;padding:14px;display:flex;gap:14px;align-items:center;text-decoration:none}
+.tablebox{overflow-x:auto;background:var(--card);border-radius:20px}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{padding:12px 16px;text-align:right;white-space:nowrap;font-size:14px}
+th{font-size:12px;color:var(--sub);font-weight:500;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+th:first-child,td:first-child{text-align:left}
+tbody tr{border-bottom:1px solid #23232a;cursor:pointer}
+tbody tr:hover{background:#22222a}
+.tname{display:flex;align-items:center;gap:12px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--card);border-radius:18px;padding:16px 18px}
+.stat b{display:block;font-size:22px;font-weight:800;margin-top:2px}
+.detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;align-items:start}
+.prices{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.ptile{min-width:0}.ptile b{font-size:clamp(18px,5vw,24px)!important;overflow-wrap:anywhere}
+.ptile{background:var(--card);border-radius:18px;padding:14px 16px;border:2px solid transparent}
+.ptile.best{border-color:var(--blue)}
+.ptile b{display:block;font-size:24px;font-weight:800;margin:2px 0}
+.banner{background:var(--goodBg);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:6px}
+.offer{display:flex;align-items:center;gap:12px;padding:11px 4px;border-top:1px solid #26262d;text-decoration:none}
+.offer:first-of-type{border-top:0}
+.badge{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex:none}
+.grow{flex:1;min-width:0}
+.ellip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px}
+.kv .tot{font-weight:800;border-top:1px solid var(--line);padding-top:8px}
+.chart text{fill:var(--mute);font-size:11px;font-family:var(--font)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.notice{background:#1b2a45;color:#cfe0ff;border-radius:14px;padding:12px 14px;font-size:13px}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 12px}
+.drop{border:1.5px dashed #4a4a55;border-radius:20px;padding:32px 20px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.drop.over{border-color:var(--blueInk);background:#151a26}
+.report li{margin:4px 0}
+.ok{color:#8fe0a0} .warn{color:#ffcf70} .err{color:#ff8a8a}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#f4f4f6;color:#101014;font-weight:700;padding:12px 18px;border-radius:14px;z-index:20;max-width:90vw}
+.empty{padding:40px 16px;text-align:center;color:var(--sub)}
+.radio{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:12px;min-height:62px;padding:0 16px;border-radius:16px;background:var(--card);border:2px solid var(--line);cursor:pointer;text-align:left;width:100%}
+.opt[aria-pressed="true"]{border-color:var(--blue)}
+.grades{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.grades button{min-height:62px;border-radius:14px;border:0;background:var(--card);color:#cfcfd6;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.grades button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+select,input[type=number]{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:12px;min-height:48px;padding:0 12px;font:inherit;width:100%}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--sub)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.detail,.two{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){
+  main{padding-bottom:110px}
+  .top{backdrop-filter:none;background:var(--bg)}
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#17171c;border-top:1px solid #26262e;justify-content:space-around;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+  .nav a{flex-direction:column;gap:2px;font-size:11px;min-height:52px;padding:0 10px;background:transparent!important}
+  .nav svg{display:block}
+  .src{max-width:170px}
+  .h1{font-size:22px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<div class="top"><div class="wrap topin">
+  <a class="logo" href="#home">VeryCheap</a>
+  <nav class="nav" aria-label="주 메뉴">
+    <a href="#home" data-r="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3zM9 20v-6h6v6"/></svg>사기</a>
+    
+    <a href="#sell" data-r="sell"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 .01 0zM12 8v8M8 12h8"/></svg>팔기</a>
+    <a href="#wallet" data-r="wallet"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v13H3zM3 7l13-4v4M16 13h2"/></svg>내 지갑</a>
+    <a href="#data" data-r="data"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM4 10h16M10 10v9"/></svg>데이터</a>
+  </nav>
+  <a class="src" id="src" href="#data"></a>
+</div></div>
+<main class="wrap" id="app"></main>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const SAMPLE = {"products":[{"product_id":"DIG-001","category":"디지털","name":"무선 이어폰 A","brand":"[브랜드]","model_no":"","option":"화이트","list_price":359000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"DIG-002","category":"디지털","name":"스마트워치 C","brand":"[브랜드]","model_no":"","option":"44mm","list_price":429000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"DIG-003","category":"디지털","name":"태블릿 D","brand":"[브랜드]","model_no":"","option":"128GB","list_price":999000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"DIG-004","category":"디지털","name":"노트북 F","brand":"[브랜드]","model_no":"","option":"16GB/512GB","list_price":1690000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"DIG-005","category":"디지털","name":"게이밍 모니터 H","brand":"[브랜드]","model_no":"","option":"27인치","list_price":549000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"APP-001","category":"가전","name":"로봇청소기 B","brand":"[브랜드]","model_no":"","option":"물걸레 겸용","list_price":899000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"APP-002","category":"가전","name":"공기청정기 E","brand":"[브랜드]","model_no":"","option":"33평형","list_price":299000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"APP-003","category":"가전","name":"커피머신 G","brand":"[브랜드]","model_no":"","option":"캡슐형","list_price":249000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"APP-004","category":"가전","name":"무선 청소기 N","brand":"[브랜드]","model_no":"","option":"스탠드형","list_price":599000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"APP-005","category":"가전","name":"헤어드라이어 S","brand":"[브랜드]","model_no":"","option":"1600W","list_price":429000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"BTY-001","category":"뷰티","name":"스킨케어 세트 L","brand":"[브랜드]","model_no":"","option":"3종","list_price":72000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"BTY-002","category":"뷰티","name":"향수 T","brand":"[브랜드]","model_no":"","option":"50ml","list_price":185000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"BTY-003","category":"뷰티","name":"뷰티 디바이스 U","brand":"[브랜드]","model_no":"","option":"고주파","list_price":349000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"BTY-004","category":"뷰티","name":"고데기 V","brand":"[브랜드]","model_no":"","option":"32mm","list_price":159000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"BTY-005","category":"뷰티","name":"선크림 세트 W","brand":"[브랜드]","model_no":"","option":"50ml×2","list_price":38000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"FOD-001","category":"식품·생필품","name":"종합비타민 K","brand":"[브랜드]","model_no":"","option":"180정","list_price":42000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"FOD-002","category":"식품·생필품","name":"커피 캡슐 X","brand":"[브랜드]","model_no":"","option":"100개입","list_price":65000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"FOD-003","category":"식품·생필품","name":"세탁세제 Y","brand":"[브랜드]","model_no":"","option":"5L×2","list_price":39800,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"FOD-004","category":"식품·생필품","name":"단백질 쉐이크 Z","brand":"[브랜드]","model_no":"","option":"2kg","list_price":69000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"FOD-005","category":"식품·생필품","name":"견과 선물세트 AA","brand":"[브랜드]","model_no":"","option":"30봉","list_price":45000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"BABY-001","category":"육아","name":"유아 물티슈 M","brand":"[브랜드]","model_no":"","option":"20팩","list_price":32000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"BABY-002","category":"육아","name":"휴대용 유모차 BA","brand":"[브랜드]","model_no":"","option":"기내 반입형","list_price":590000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"BABY-003","category":"육아","name":"회전형 카시트 BB","brand":"[브랜드]","model_no":"","option":"ISOFIX","list_price":699000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"BABY-004","category":"육아","name":"아기띠 BC","brand":"[브랜드]","model_no":"","option":"힙시트형","list_price":249000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"BABY-005","category":"육아","name":"젖병소독기 BD","brand":"[브랜드]","model_no":"","option":"UV 건조","list_price":269000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"RSL-001","category":"리셀형","name":"게임 콘솔 P","brand":"[브랜드]","model_no":"","option":"디스크 에디션","list_price":529000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"RSL-002","category":"리셀형","name":"한정판 스니커즈 Q","brand":"[브랜드]","model_no":"","option":"270mm","list_price":179000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"RSL-003","category":"리셀형","name":"기계식 키보드 R","brand":"[브랜드]","model_no":"","option":"한정 컬러","list_price":129000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"RSL-004","category":"리셀형","name":"휴대용 게임기 RA","brand":"[브랜드]","model_no":"","option":"OLED","list_price":415000,"image_url":"","release_date":"","source_url":"","notes":"샘플"},{"product_id":"RSL-005","category":"리셀형","name":"한정판 피규어 RB","brand":"[브랜드]","model_no":"","option":"1/7 스케일","list_price":198000,"image_url":"","release_date":"","source_url":"","notes":"샘플"}],"new_offers":[{"product_id":"DIG-001","channel":"네이버","seller":"네이버 스토어","price":289000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-001","channel":"G마켓","seller":"G마켓 스토어","price":293600,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-001","channel":"11번가","seller":"11번가 스토어","price":304300,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-001","channel":"쿠팡","seller":"쿠팡","price":300300,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-001","channel":"공구","seller":"@채널E","price":274600,"shipping_fee":0,"discount_note":"11/3 오픈 예정가","in_stock":"N","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-002","channel":"자사몰","seller":"자사몰 스토어","price":359000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-002","channel":"G마켓","seller":"G마켓 스토어","price":370900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-002","channel":"네이버","seller":"네이버 스토어","price":390700,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-002","channel":"11번가","seller":"11번가 스토어","price":366000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-003","channel":"자사몰","seller":"자사몰 스토어","price":799000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-003","channel":"11번가","seller":"11번가 스토어","price":870000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-003","channel":"G마켓","seller":"G마켓 스토어","price":850600,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-003","channel":"네이버","seller":"네이버 스토어","price":831300,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-003","channel":"공구","seller":"@채널A","price":759000,"shipping_fee":0,"discount_note":"11/3 오픈 예정가","in_stock":"N","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-004","channel":"쿠팡","seller":"쿠팡","price":1390000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-004","channel":"자사몰","seller":"자사몰 스토어","price":1457300,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-004","channel":"네이버","seller":"네이버 스토어","price":1438600,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-004","channel":"11번가","seller":"11번가 스토어","price":1419900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-005","channel":"네이버","seller":"네이버 스토어","price":429000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-005","channel":"G마켓","seller":"G마켓 스토어","price":444900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-005","channel":"쿠팡","seller":"쿠팡","price":449900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-001","channel":"자사몰","seller":"자사몰 스토어","price":649000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-001","channel":"네이버","seller":"네이버 스토어","price":682800,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-001","channel":"쿠팡","seller":"쿠팡","price":704000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-001","channel":"11번가","seller":"11번가 스토어","price":678000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-001","channel":"G마켓","seller":"G마켓 스토어","price":700800,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-002","channel":"11번가","seller":"11번가 스토어","price":219000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-002","channel":"쿠팡","seller":"쿠팡","price":230100,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-002","channel":"G마켓","seller":"G마켓 스토어","price":231000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-003","channel":"네이버","seller":"네이버 스토어","price":178000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-003","channel":"G마켓","seller":"G마켓 스토어","price":185500,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-003","channel":"쿠팡","seller":"쿠팡","price":186700,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-003","channel":"11번가","seller":"11번가 스토어","price":193900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-004","channel":"네이버","seller":"네이버 스토어","price":429000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-004","channel":"G마켓","seller":"G마켓 스토어","price":442500,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-004","channel":"쿠팡","seller":"쿠팡","price":433900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-004","channel":"공구","seller":"@채널C","price":407600,"shipping_fee":0,"discount_note":"11/3 오픈 예정가","in_stock":"N","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","channel":"쿠팡","seller":"쿠팡","price":389000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","channel":"자사몰","seller":"자사몰 스토어","price":408900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","channel":"G마켓","seller":"G마켓 스토어","price":400500,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","channel":"11번가","seller":"11번가 스토어","price":406800,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-001","channel":"쿠팡","seller":"쿠팡","price":58000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-001","channel":"11번가","seller":"11번가 스토어","price":59200,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-001","channel":"자사몰","seller":"자사몰 스토어","price":61300,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-002","channel":"쿠팡","seller":"쿠팡","price":142000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-002","channel":"11번가","seller":"11번가 스토어","price":146000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-002","channel":"자사몰","seller":"자사몰 스토어","price":150800,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-002","channel":"G마켓","seller":"G마켓 스토어","price":148600,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-003","channel":"G마켓","seller":"G마켓 스토어","price":279000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-003","channel":"쿠팡","seller":"쿠팡","price":292000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-003","channel":"네이버","seller":"네이버 스토어","price":300100,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-004","channel":"쿠팡","seller":"쿠팡","price":119000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-004","channel":"11번가","seller":"11번가 스토어","price":129100,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-004","channel":"G마켓","seller":"G마켓 스토어","price":122600,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-004","channel":"공구","seller":"@채널E","price":113000,"shipping_fee":0,"discount_note":"11/3 오픈 예정가","in_stock":"N","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-005","channel":"자사몰","seller":"자사몰 스토어","price":26900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-005","channel":"네이버","seller":"네이버 스토어","price":27400,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-005","channel":"쿠팡","seller":"쿠팡","price":27900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-005","channel":"공구","seller":"@채널B","price":25600,"shipping_fee":0,"discount_note":"11/3 오픈 예정가","in_stock":"N","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-001","channel":"네이버","seller":"네이버 스토어","price":35500,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-001","channel":"자사몰","seller":"자사몰 스토어","price":38600,"shipping_fee":3000,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-001","channel":"11번가","seller":"11번가 스토어","price":36200,"shipping_fee":3000,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-002","channel":"쿠팡","seller":"쿠팡","price":49900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-002","channel":"11번가","seller":"11번가 스토어","price":53800,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-002","channel":"G마켓","seller":"G마켓 스토어","price":50700,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-003","channel":"G마켓","seller":"G마켓 스토어","price":27900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-003","channel":"11번가","seller":"11번가 스토어","price":28400,"shipping_fee":3000,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-003","channel":"네이버","seller":"네이버 스토어","price":28400,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-003","channel":"자사몰","seller":"자사몰 스토어","price":28400,"shipping_fee":3000,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-003","channel":"쿠팡","seller":"쿠팡","price":29100,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-004","channel":"자사몰","seller":"자사몰 스토어","price":52000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-004","channel":"쿠팡","seller":"쿠팡","price":56000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-004","channel":"G마켓","seller":"G마켓 스토어","price":53000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","channel":"자사몰","seller":"자사몰 스토어","price":31900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","channel":"11번가","seller":"11번가 스토어","price":34100,"shipping_fee":3000,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","channel":"네이버","seller":"네이버 스토어","price":32700,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","channel":"G마켓","seller":"G마켓 스토어","price":32900,"shipping_fee":3000,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","channel":"공구","seller":"@채널B","price":30300,"shipping_fee":0,"discount_note":"11/3 오픈 예정가","in_stock":"N","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","channel":"11번가","seller":"11번가 스토어","price":26800,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","channel":"G마켓","seller":"G마켓 스토어","price":27900,"shipping_fee":3000,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","channel":"자사몰","seller":"자사몰 스토어","price":28400,"shipping_fee":3000,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","channel":"공구","seller":"@채널A","price":25500,"shipping_fee":0,"discount_note":"11/3 오픈 예정가","in_stock":"N","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-002","channel":"11번가","seller":"11번가 스토어","price":459000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-002","channel":"네이버","seller":"네이버 스토어","price":499400,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-002","channel":"쿠팡","seller":"쿠팡","price":481300,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-002","channel":"공구","seller":"@채널D","price":436000,"shipping_fee":0,"discount_note":"11/3 오픈 예정가","in_stock":"N","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","channel":"11번가","seller":"11번가 스토어","price":529000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","channel":"G마켓","seller":"G마켓 스토어","price":550800,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","channel":"네이버","seller":"네이버 스토어","price":549800,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","channel":"쿠팡","seller":"쿠팡","price":555600,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","channel":"자사몰","seller":"자사몰 스토어","price":541900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","channel":"공구","seller":"@채널D","price":502600,"shipping_fee":0,"discount_note":"11/3 오픈 예정가","in_stock":"N","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-004","channel":"쿠팡","seller":"쿠팡","price":189000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-004","channel":"네이버","seller":"네이버 스토어","price":193300,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-004","channel":"자사몰","seller":"자사몰 스토어","price":205000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-004","channel":"G마켓","seller":"G마켓 스토어","price":201200,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-005","channel":"자사몰","seller":"자사몰 스토어","price":199000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-005","channel":"G마켓","seller":"G마켓 스토어","price":215200,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-005","channel":"네이버","seller":"네이버 스토어","price":203100,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-005","channel":"11번가","seller":"11번가 스토어","price":204600,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","channel":"자사몰","seller":"자사몰 스토어","price":498000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","channel":"G마켓","seller":"G마켓 스토어","price":512900,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","channel":"11번가","seller":"11번가 스토어","price":539000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","channel":"네이버","seller":"네이버 스토어","price":504700,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","channel":"11번가","seller":"11번가 스토어","price":179000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","channel":"네이버","seller":"네이버 스토어","price":186200,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","channel":"G마켓","seller":"G마켓 스토어","price":193000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","channel":"자사몰","seller":"자사몰 스토어","price":194000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","channel":"쿠팡","seller":"쿠팡","price":194800,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","channel":"쿠팡","seller":"쿠팡","price":129000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","channel":"11번가","seller":"11번가 스토어","price":130800,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","channel":"네이버","seller":"네이버 스토어","price":138100,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","channel":"G마켓","seller":"G마켓 스토어","price":139700,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","channel":"쿠팡","seller":"쿠팡","price":398000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","channel":"11번가","seller":"11번가 스토어","price":415600,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","channel":"자사몰","seller":"자사몰 스토어","price":419300,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","channel":"네이버","seller":"네이버 스토어","price":407400,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","channel":"G마켓","seller":"G마켓 스토어","price":433300,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-005","channel":"쿠팡","seller":"쿠팡","price":198000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-005","channel":"11번가","seller":"11번가 스토어","price":214000,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-005","channel":"자사몰","seller":"자사몰 스토어","price":207300,"shipping_fee":0,"discount_note":"","in_stock":"Y","url":"","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-005","channel":"공구","seller":"@채널D","price":188100,"shipping_fee":0,"discount_note":"11/3 오픈 예정가","in_stock":"N","url":"","collected_at":"2026-10-29 10:00"}],"used_offers":[{"product_id":"DIG-001","platform":"당근","condition":"S","price":221000,"status":"판매중","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-28","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-001","platform":"중고나라","condition":"S","price":232000,"status":"판매중","location":"역삼동","shipping_available":"N","url":"","posted_date":"2026-10-11","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-001","platform":"당근","condition":"C","price":135000,"status":"판매중","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-28","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-001","platform":"당근","condition":"A","price":194000,"status":"판매완료","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-13","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-001","platform":"당근","condition":"A","price":208000,"status":"판매중","location":"택배","shipping_available":"N","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-002","platform":"당근","condition":"S","price":312000,"status":"판매중","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-002","platform":"중고나라","condition":"A","price":273000,"status":"판매완료","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-18","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-002","platform":"당근","condition":"A","price":270000,"status":"판매완료","location":"서교동","shipping_available":"N","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-002","platform":"번개장터","condition":"B","price":210000,"status":"판매완료","location":"택배","shipping_available":"N","url":"","posted_date":"2026-10-15","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-002","platform":"당근","condition":"A","price":272000,"status":"판매중","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-22","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-002","platform":"당근","condition":"A","price":250000,"status":"판매완료","location":"정자동","shipping_available":"N","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-003","platform":"당근","condition":"S","price":726000,"status":"판매완료","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-003","platform":"번개장터","condition":"S","price":739000,"status":"판매중","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-003","platform":"중고나라","condition":"C","price":414000,"status":"판매완료","location":"정자동","shipping_available":"N","url":"","posted_date":"2026-10-22","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-003","platform":"번개장터","condition":"A","price":610000,"status":"판매중","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-24","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-003","platform":"당근","condition":"S","price":687000,"status":"판매중","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-21","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-004","platform":"중고나라","condition":"A","price":980000,"status":"판매완료","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-27","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-004","platform":"번개장터","condition":"C","price":762000,"status":"판매완료","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-004","platform":"당근","condition":"A","price":1055000,"status":"판매중","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-16","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-004","platform":"중고나라","condition":"B","price":941000,"status":"판매완료","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-21","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-004","platform":"번개장터","condition":"B","price":899000,"status":"예약중","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-24","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-004","platform":"번개장터","condition":"B","price":961000,"status":"판매완료","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-17","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-005","platform":"중고나라","condition":"A","price":283000,"status":"판매완료","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-16","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-005","platform":"중고나라","condition":"A","price":293000,"status":"판매중","location":"정자동","shipping_available":"N","url":"","posted_date":"2026-10-22","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-005","platform":"당근","condition":"B","price":246000,"status":"판매중","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"DIG-005","platform":"중고나라","condition":"A","price":285000,"status":"판매중","location":"택배","shipping_available":"N","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"APP-001","platform":"중고나라","condition":"S","price":486000,"status":"판매중","location":"망원동","shipping_available":"N","url":"","posted_date":"2026-10-27","collected_at":"2026-10-29 10:00"},{"product_id":"APP-001","platform":"중고나라","condition":"A","price":441000,"status":"판매중","location":"택배","shipping_available":"N","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"APP-001","platform":"중고나라","condition":"S","price":470000,"status":"판매중","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-10","collected_at":"2026-10-29 10:00"},{"product_id":"APP-001","platform":"당근","condition":"B","price":386000,"status":"판매중","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"},{"product_id":"APP-001","platform":"번개장터","condition":"A","price":468000,"status":"판매중","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-17","collected_at":"2026-10-29 10:00"},{"product_id":"APP-002","platform":"중고나라","condition":"A","price":132000,"status":"판매완료","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-24","collected_at":"2026-10-29 10:00"},{"product_id":"APP-002","platform":"중고나라","condition":"A","price":138000,"status":"판매완료","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-24","collected_at":"2026-10-29 10:00"},{"product_id":"APP-002","platform":"번개장터","condition":"S","price":142000,"status":"판매중","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-12","collected_at":"2026-10-29 10:00"},{"product_id":"APP-002","platform":"당근","condition":"A","price":137000,"status":"판매중","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"APP-003","platform":"번개장터","condition":"B","price":101000,"status":"예약중","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"},{"product_id":"APP-003","platform":"번개장터","condition":"S","price":135000,"status":"판매중","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-22","collected_at":"2026-10-29 10:00"},{"product_id":"APP-003","platform":"중고나라","condition":"A","price":128000,"status":"판매완료","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-13","collected_at":"2026-10-29 10:00"},{"product_id":"APP-003","platform":"당근","condition":"S","price":130000,"status":"판매중","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-18","collected_at":"2026-10-29 10:00"},{"product_id":"APP-003","platform":"중고나라","condition":"A","price":121000,"status":"판매중","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-18","collected_at":"2026-10-29 10:00"},{"product_id":"APP-004","platform":"번개장터","condition":"A","price":305000,"status":"판매중","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"},{"product_id":"APP-004","platform":"번개장터","condition":"C","price":201000,"status":"판매중","location":"역삼동","shipping_available":"Y","url":"","posted_date":"2026-10-13","collected_at":"2026-10-29 10:00"},{"product_id":"APP-004","platform":"당근","condition":"C","price":189000,"status":"판매중","location":"서교동","shipping_available":"N","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"APP-004","platform":"중고나라","condition":"B","price":255000,"status":"판매중","location":"서교동","shipping_available":"N","url":"","posted_date":"2026-10-10","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","platform":"번개장터","condition":"A","price":352000,"status":"판매중","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-17","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","platform":"중고나라","condition":"A","price":341000,"status":"판매완료","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-21","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","platform":"당근","condition":"C","price":211000,"status":"판매완료","location":"서교동","shipping_available":"N","url":"","posted_date":"2026-10-15","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","platform":"번개장터","condition":"S","price":389000,"status":"판매완료","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","platform":"번개장터","condition":"S","price":367000,"status":"판매중","location":"서교동","shipping_available":"N","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","platform":"당근","condition":"C","price":210000,"status":"판매중","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-21","collected_at":"2026-10-29 10:00"},{"product_id":"APP-005","platform":"당근","condition":"S","price":368000,"status":"판매중","location":"대치동","shipping_available":"Y","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-001","platform":"중고나라","condition":"A","price":43000,"status":"판매중","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-001","platform":"번개장터","condition":"B","price":35000,"status":"판매중","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-001","platform":"중고나라","condition":"A","price":38000,"status":"판매완료","location":"역삼동","shipping_available":"Y","url":"","posted_date":"2026-10-12","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-001","platform":"번개장터","condition":"S","price":48000,"status":"판매중","location":"정자동","shipping_available":"N","url":"","posted_date":"2026-10-27","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-001","platform":"중고나라","condition":"S","price":46000,"status":"판매중","location":"택배","shipping_available":"N","url":"","posted_date":"2026-10-10","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-001","platform":"중고나라","condition":"A","price":42000,"status":"판매중","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-25","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-002","platform":"당근","condition":"A","price":112000,"status":"판매완료","location":"대치동","shipping_available":"Y","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-002","platform":"중고나라","condition":"A","price":107000,"status":"판매완료","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-25","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-002","platform":"중고나라","condition":"S","price":116000,"status":"판매중","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-002","platform":"번개장터","condition":"B","price":94000,"status":"판매중","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-003","platform":"당근","condition":"C","price":109000,"status":"판매중","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-003","platform":"중고나라","condition":"A","price":178000,"status":"판매중","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-21","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-003","platform":"번개장터","condition":"A","price":167000,"status":"예약중","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-25","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-003","platform":"중고나라","condition":"A","price":161000,"status":"판매중","location":"망원동","shipping_available":"N","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-003","platform":"번개장터","condition":"S","price":197000,"status":"판매중","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-16","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-003","platform":"번개장터","condition":"B","price":141000,"status":"예약중","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-22","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-003","platform":"번개장터","condition":"C","price":122000,"status":"판매완료","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-18","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-004","platform":"번개장터","condition":"S","price":85000,"status":"판매중","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-12","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-004","platform":"번개장터","condition":"S","price":82000,"status":"판매완료","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-25","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-004","platform":"당근","condition":"S","price":77000,"status":"예약중","location":"정자동","shipping_available":"N","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-004","platform":"중고나라","condition":"A","price":70000,"status":"판매완료","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-25","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-004","platform":"당근","condition":"A","price":73000,"status":"판매중","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-004","platform":"당근","condition":"C","price":49000,"status":"판매중","location":"망원동","shipping_available":"N","url":"","posted_date":"2026-10-23","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-005","platform":"당근","condition":"A","price":21000,"status":"판매완료","location":"정자동","shipping_available":"N","url":"","posted_date":"2026-10-23","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-005","platform":"번개장터","condition":"B","price":17000,"status":"판매중","location":"역삼동","shipping_available":"N","url":"","posted_date":"2026-10-18","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-005","platform":"중고나라","condition":"A","price":20000,"status":"판매중","location":"대치동","shipping_available":"Y","url":"","posted_date":"2026-10-18","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-005","platform":"중고나라","condition":"B","price":17000,"status":"판매중","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-005","platform":"번개장터","condition":"S","price":24000,"status":"판매완료","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-12","collected_at":"2026-10-29 10:00"},{"product_id":"BTY-005","platform":"중고나라","condition":"A","price":21000,"status":"예약중","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-13","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-001","platform":"당근","condition":"S","price":29000,"status":"판매완료","location":"대치동","shipping_available":"Y","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-001","platform":"중고나라","condition":"C","price":17000,"status":"판매완료","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-12","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-001","platform":"당근","condition":"A","price":25000,"status":"예약중","location":"대치동","shipping_available":"Y","url":"","posted_date":"2026-10-10","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-001","platform":"번개장터","condition":"A","price":27000,"status":"예약중","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-001","platform":"번개장터","condition":"A","price":26000,"status":"판매중","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-10","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-001","platform":"중고나라","condition":"S","price":28000,"status":"판매완료","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-23","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-001","platform":"당근","condition":"C","price":17000,"status":"판매중","location":"정자동","shipping_available":"N","url":"","posted_date":"2026-10-22","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-002","platform":"당근","condition":"A","price":42000,"status":"판매완료","location":"서교동","shipping_available":"N","url":"","posted_date":"2026-10-13","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-002","platform":"당근","condition":"C","price":30000,"status":"판매중","location":"택배","shipping_available":"N","url":"","posted_date":"2026-10-11","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-002","platform":"번개장터","condition":"C","price":27000,"status":"판매중","location":"역삼동","shipping_available":"Y","url":"","posted_date":"2026-10-23","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-002","platform":"번개장터","condition":"S","price":47000,"status":"판매중","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-12","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-002","platform":"당근","condition":"C","price":29000,"status":"판매중","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-003","platform":"번개장터","condition":"A","price":21000,"status":"판매완료","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-11","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-003","platform":"중고나라","condition":"B","price":18000,"status":"판매중","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-21","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-003","platform":"중고나라","condition":"B","price":17000,"status":"판매중","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-22","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-003","platform":"당근","condition":"S","price":22000,"status":"판매중","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-21","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-003","platform":"중고나라","condition":"A","price":19000,"status":"예약중","location":"망원동","shipping_available":"N","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-004","platform":"번개장터","condition":"C","price":29000,"status":"판매중","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-25","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-004","platform":"중고나라","condition":"S","price":44000,"status":"판매완료","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-004","platform":"중고나라","condition":"B","price":32000,"status":"판매중","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-15","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-004","platform":"당근","condition":"A","price":40000,"status":"판매중","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-23","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-004","platform":"번개장터","condition":"B","price":35000,"status":"예약중","location":"대치동","shipping_available":"Y","url":"","posted_date":"2026-10-23","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-004","platform":"번개장터","condition":"A","price":38000,"status":"판매완료","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-24","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-004","platform":"중고나라","condition":"A","price":40000,"status":"판매완료","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","platform":"번개장터","condition":"B","price":18000,"status":"판매완료","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","platform":"당근","condition":"A","price":22000,"status":"판매완료","location":"역삼동","shipping_available":"Y","url":"","posted_date":"2026-10-10","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","platform":"번개장터","condition":"A","price":23000,"status":"판매완료","location":"역삼동","shipping_available":"N","url":"","posted_date":"2026-10-17","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","platform":"중고나라","condition":"S","price":24000,"status":"판매중","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","platform":"번개장터","condition":"B","price":20000,"status":"판매중","location":"역삼동","shipping_available":"Y","url":"","posted_date":"2026-10-21","collected_at":"2026-10-29 10:00"},{"product_id":"FOD-005","platform":"당근","condition":"A","price":21000,"status":"판매중","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-16","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","platform":"당근","condition":"A","price":22000,"status":"판매중","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-15","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","platform":"번개장터","condition":"A","price":21000,"status":"판매중","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-19","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","platform":"번개장터","condition":"B","price":18000,"status":"판매완료","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-22","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","platform":"당근","condition":"B","price":18000,"status":"판매중","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-13","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","platform":"번개장터","condition":"B","price":18000,"status":"판매중","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-10","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","platform":"번개장터","condition":"S","price":22000,"status":"판매중","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-001","platform":"당근","condition":"A","price":22000,"status":"판매중","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-25","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-002","platform":"당근","condition":"C","price":229000,"status":"판매완료","location":"대치동","shipping_available":"N","url":"","posted_date":"2026-10-16","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-002","platform":"당근","condition":"B","price":266000,"status":"판매중","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-21","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-002","platform":"중고나라","condition":"S","price":386000,"status":"판매중","location":"대치동","shipping_available":"Y","url":"","posted_date":"2026-10-27","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-002","platform":"중고나라","condition":"B","price":297000,"status":"판매완료","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-24","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","platform":"번개장터","condition":"A","price":377000,"status":"판매완료","location":"택배","shipping_available":"N","url":"","posted_date":"2026-10-13","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","platform":"번개장터","condition":"S","price":380000,"status":"판매중","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-11","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","platform":"중고나라","condition":"A","price":351000,"status":"판매중","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","platform":"당근","condition":"B","price":289000,"status":"판매완료","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-16","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","platform":"번개장터","condition":"S","price":429000,"status":"판매완료","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-12","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","platform":"번개장터","condition":"B","price":295000,"status":"판매완료","location":"서교동","shipping_available":"N","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-003","platform":"번개장터","condition":"A","price":345000,"status":"예약중","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-004","platform":"중고나라","condition":"B","price":97000,"status":"판매중","location":"망원동","shipping_available":"N","url":"","posted_date":"2026-10-27","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-004","platform":"당근","condition":"A","price":116000,"status":"판매완료","location":"정자동","shipping_available":"N","url":"","posted_date":"2026-10-18","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-004","platform":"당근","condition":"A","price":118000,"status":"판매중","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-17","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-004","platform":"당근","condition":"S","price":131000,"status":"판매완료","location":"서교동","shipping_available":"N","url":"","posted_date":"2026-10-28","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-004","platform":"중고나라","condition":"C","price":76000,"status":"예약중","location":"역삼동","shipping_available":"Y","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-005","platform":"번개장터","condition":"S","price":159000,"status":"판매완료","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-23","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-005","platform":"당근","condition":"A","price":147000,"status":"판매완료","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-005","platform":"중고나라","condition":"S","price":160000,"status":"판매완료","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"BABY-005","platform":"번개장터","condition":"B","price":135000,"status":"판매완료","location":"역삼동","shipping_available":"Y","url":"","posted_date":"2026-10-27","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","platform":"당근","condition":"S","price":569000,"status":"판매중","location":"대치동","shipping_available":"Y","url":"","posted_date":"2026-10-23","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","platform":"중고나라","condition":"S","price":623000,"status":"판매완료","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","platform":"당근","condition":"A","price":583000,"status":"판매중","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-22","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","platform":"번개장터","condition":"B","price":441000,"status":"판매완료","location":"택배","shipping_available":"Y","url":"","posted_date":"2026-10-17","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","platform":"중고나라","condition":"C","price":347000,"status":"판매중","location":"망원동","shipping_available":"N","url":"","posted_date":"2026-10-11","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","platform":"번개장터","condition":"A","price":559000,"status":"판매중","location":"서교동","shipping_available":"N","url":"","posted_date":"2026-10-16","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-001","platform":"당근","condition":"S","price":590000,"status":"판매중","location":"대치동","shipping_available":"Y","url":"","posted_date":"2026-10-15","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","platform":"당근","condition":"A","price":305000,"status":"판매중","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-28","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","platform":"번개장터","condition":"B","price":254000,"status":"판매완료","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-14","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","platform":"중고나라","condition":"S","price":344000,"status":"판매중","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-10","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","platform":"중고나라","condition":"S","price":331000,"status":"판매중","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-12","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","platform":"당근","condition":"B","price":260000,"status":"판매완료","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-13","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","platform":"당근","condition":"A","price":271000,"status":"판매중","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-25","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-002","platform":"중고나라","condition":"S","price":311000,"status":"판매중","location":"망원동","shipping_available":"N","url":"","posted_date":"2026-10-23","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","platform":"당근","condition":"B","price":127000,"status":"판매완료","location":"역삼동","shipping_available":"N","url":"","posted_date":"2026-10-26","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","platform":"중고나라","condition":"B","price":114000,"status":"판매중","location":"대치동","shipping_available":"Y","url":"","posted_date":"2026-10-28","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","platform":"당근","condition":"B","price":123000,"status":"판매중","location":"서교동","shipping_available":"Y","url":"","posted_date":"2026-10-10","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","platform":"중고나라","condition":"A","price":148000,"status":"판매중","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-28","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","platform":"번개장터","condition":"A","price":144000,"status":"판매완료","location":"삼성동","shipping_available":"N","url":"","posted_date":"2026-10-16","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","platform":"당근","condition":"C","price":91000,"status":"판매중","location":"논현동","shipping_available":"N","url":"","posted_date":"2026-10-27","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-003","platform":"번개장터","condition":"B","price":115000,"status":"판매완료","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-23","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","platform":"중고나라","condition":"S","price":446000,"status":"판매완료","location":"역삼동","shipping_available":"N","url":"","posted_date":"2026-10-28","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","platform":"번개장터","condition":"A","price":394000,"status":"판매중","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-24","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","platform":"중고나라","condition":"A","price":371000,"status":"판매완료","location":"망원동","shipping_available":"N","url":"","posted_date":"2026-10-17","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","platform":"중고나라","condition":"A","price":403000,"status":"판매중","location":"삼성동","shipping_available":"Y","url":"","posted_date":"2026-10-17","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","platform":"번개장터","condition":"B","price":315000,"status":"판매완료","location":"망원동","shipping_available":"Y","url":"","posted_date":"2026-10-18","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","platform":"당근","condition":"C","price":250000,"status":"판매완료","location":"논현동","shipping_available":"Y","url":"","posted_date":"2026-10-22","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-004","platform":"번개장터","condition":"S","price":445000,"status":"판매중","location":"정자동","shipping_available":"N","url":"","posted_date":"2026-10-16","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-005","platform":"번개장터","condition":"A","price":247000,"status":"판매완료","location":"서교동","shipping_available":"N","url":"","posted_date":"2026-10-10","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-005","platform":"번개장터","condition":"B","price":234000,"status":"예약중","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-28","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-005","platform":"중고나라","condition":"B","price":216000,"status":"판매완료","location":"정자동","shipping_available":"N","url":"","posted_date":"2026-10-18","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-005","platform":"번개장터","condition":"A","price":255000,"status":"판매중","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-18","collected_at":"2026-10-29 10:00"},{"product_id":"RSL-005","platform":"당근","condition":"B","price":232000,"status":"판매중","location":"정자동","shipping_available":"Y","url":"","posted_date":"2026-10-20","collected_at":"2026-10-29 10:00"}],"price_history":[{"product_id":"DIG-001","date":"2026-05-01","new_lowest":341000,"used_avg":230000,"source":"샘플"},{"product_id":"DIG-001","date":"2026-06-01","new_lowest":337000,"used_avg":226000,"source":"샘플"},{"product_id":"DIG-001","date":"2026-07-01","new_lowest":322000,"used_avg":221000,"source":"샘플"},{"product_id":"DIG-001","date":"2026-08-01","new_lowest":312000,"used_avg":217000,"source":"샘플"},{"product_id":"DIG-001","date":"2026-09-01","new_lowest":303000,"used_avg":213000,"source":"샘플"},{"product_id":"DIG-001","date":"2026-10-01","new_lowest":301000,"used_avg":209000,"source":"샘플"},{"product_id":"DIG-001","date":"2026-10-29","new_lowest":284000,"used_avg":205000,"source":"샘플"},{"product_id":"DIG-003","date":"2026-05-01","new_lowest":953000,"used_avg":728000,"source":"샘플"},{"product_id":"DIG-003","date":"2026-06-01","new_lowest":910000,"used_avg":715000,"source":"샘플"},{"product_id":"DIG-003","date":"2026-07-01","new_lowest":890000,"used_avg":702000,"source":"샘플"},{"product_id":"DIG-003","date":"2026-08-01","new_lowest":870000,"used_avg":689000,"source":"샘플"},{"product_id":"DIG-003","date":"2026-09-01","new_lowest":853000,"used_avg":676000,"source":"샘플"},{"product_id":"DIG-003","date":"2026-10-01","new_lowest":839000,"used_avg":663000,"source":"샘플"},{"product_id":"DIG-003","date":"2026-10-29","new_lowest":802000,"used_avg":650000,"source":"샘플"},{"product_id":"RSL-001","date":"2026-05-01","new_lowest":560000,"used_avg":470000,"source":"샘플"},{"product_id":"RSL-001","date":"2026-06-01","new_lowest":550000,"used_avg":482000,"source":"샘플"},{"product_id":"RSL-001","date":"2026-07-01","new_lowest":539000,"used_avg":495000,"source":"샘플"},{"product_id":"RSL-001","date":"2026-08-01","new_lowest":529000,"used_avg":508000,"source":"샘플"},{"product_id":"RSL-001","date":"2026-09-01","new_lowest":519000,"used_avg":520000,"source":"샘플"},{"product_id":"RSL-001","date":"2026-10-01","new_lowest":508000,"used_avg":532000,"source":"샘플"},{"product_id":"RSL-001","date":"2026-10-29","new_lowest":498000,"used_avg":545000,"source":"샘플"},{"product_id":"RSL-002","date":"2026-05-01","new_lowest":179000,"used_avg":220000,"source":"샘플"},{"product_id":"RSL-002","date":"2026-06-01","new_lowest":179000,"used_avg":232000,"source":"샘플"},{"product_id":"RSL-002","date":"2026-07-01","new_lowest":179000,"used_avg":243000,"source":"샘플"},{"product_id":"RSL-002","date":"2026-08-01","new_lowest":179000,"used_avg":255000,"source":"샘플"},{"product_id":"RSL-002","date":"2026-09-01","new_lowest":179000,"used_avg":267000,"source":"샘플"},{"product_id":"RSL-002","date":"2026-10-01","new_lowest":179000,"used_avg":278000,"source":"샘플"},{"product_id":"RSL-002","date":"2026-10-29","new_lowest":179000,"used_avg":290000,"source":"샘플"}]};
+let IMAGES=null;
+const LS_DATA='vc-data-v1', LS_WALLET='vc-wallet-v1';
+const SCHEMA={
+  products:['product_id','category','name','brand','model_no','option','list_price','image_url','release_date','source_url','notes'],
+  new_offers:['product_id','channel','seller','price','shipping_fee','discount_note','in_stock','url','collected_at'],
+  used_offers:['product_id','platform','condition','price','status','location','shipping_available','url','posted_date','collected_at'],
+  price_history:['product_id','date','new_lowest','used_avg','source']
+};
+const REQUIRED={products:['product_id','category','name'],new_offers:['product_id','price'],used_offers:['product_id','price'],price_history:['product_id','date']};
+const CATS=['디지털','가전','뷰티','식품·생필품','육아','리셀형'];
+const TILE={'디지털':['#22314d','#8fb4ff'],'가전':['#2a2b33','#d0d2da'],'뷰티':['#47233a','#ff9fcf'],'식품·생필품':['#45301c','#ffbf80'],'육아':['#1f3a26','#9fe0a8'],'리셀형':['#33284d','#c3a8ff']};
+const IC={
+  earbuds:'M7 4a3 3 0 0 0-3 3v3a3 3 0 0 0 3 3h1V4zM8 13v6a1 1 0 0 1-2 0M17 4a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3h-1V4zM16 13v6a1 1 0 0 0 2 0',
+  watch:'M9 2h6l1 4H8zM8 18h8l-1 4H9zM7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM12 9v3l2 1.5',
+  tablet:'M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 19h2',
+  laptop:'M5 5h14v10H5zM2 19h20l-2-4H4z',
+  monitor:'M3 4h18v12H3zM9 20h6M12 16v4',
+  robot:'M12 3a9 9 0 1 0 .01 0zM12 8a2 2 0 1 0 .01 0zM6 15h12',
+  purifier:'M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM10 6h4M10 9h4M10 12h4',
+  coffee:'M5 3h12v4H5zM6 7h10l-1 9H7zM8 20h6M11 16v4M16 9h2a2 2 0 0 1 0 4h-2',
+  vacuum:'M15 3l-6 14M9 17H6a2 2 0 0 0 0 4h6a2 2 0 0 0 0-4M15 3h3',
+  dryer:'M4 6h9a4 4 0 0 1 0 8H8l-1 7H5l1-7H4zM17 8h4M17 12h4',
+  bottle:'M10 2h4v4h-4zM8 6h8v15a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1zM10 12h4',
+  pill:'M8 3h8v3H8zM7 6h10v15H7zM10 13h4M12 11v4',
+  food:'M4 11h16a8 8 0 0 1-16 0zM12 3v5M8 5v3M16 5v3',
+  wipes:'M3 9h18v10H3zM9 9l1-3h4l1 3',
+  stroller:'M5 4h6v8H3a8 8 0 0 0 16 0V6h2M7 20a1.5 1.5 0 1 0 .01 0zM17 20a1.5 1.5 0 1 0 .01 0z',
+  seat:'M8 3h8l1 9H7zM6 12h12v6H6zM9 18v3M15 18v3',
+  console:'M7 7h10a5 5 0 0 1 4.6 7l-1.2 2.8a2.5 2.5 0 0 1-4.2.5L14.5 15h-5l-1.7 2.3a2.5 2.5 0 0 1-4.2-.5L2.4 14A5 5 0 0 1 7 7zM8 10v3M6.5 11.5h3',
+  shoe:'M3 16v-5l4-1 3 3h4l7 2v3H3zM3 19h18',
+  keyboard:'M2 7h20v10H2zM6 10h1M10 10h1M14 10h1M18 10h1M7 14h10',
+  figure:'M12 3a3 3 0 1 0 .01 0zM8 22l1-8-3-4 6-1 6 1-3 4 1 8',
+  box:'M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10',
+  mouse:'M12 3a6 6 0 0 1 6 6v6a6 6 0 0 1-12 0V9a6 6 0 0 1 6-6zM12 3v6M6 10h12',
+  camera:'M4 8h3l2-3h6l2 3h3v11H4zM12 10a3.5 3.5 0 1 0 .01 0z',
+  bottleBaby:'M10 2h4v3h-4zM9 5h6l1 3v12a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V8zM8 12h8',
+  carrier:'M12 3a2.5 2.5 0 1 0 .01 0zM7 9h10l-1 8H8zM9 17l-1 4M15 17l1 4',
+  plug:'M9 3v5M15 3v5M6 8h12v4a6 6 0 0 1-12 0zM12 18v3'
+};
+const ICRULE=[[/이어폰|버즈|에어팟|헤드폰|헤드셋|WF-/,'earbuds'],[/마우스/,'mouse'],[/카메라|GR |GR$|X100|고프로|히어로|오즈모|액션캠|INSTAX/,'camera'],[/젖병|젖꼭지|쪽쪽이|소독기|분유/,'bottleBaby'],[/아기띠|캐리어/,'carrier'],[/하이체어|모빌/,'seat'],[/포켓몬카드|부스터|확장팩/,'box'],[/레고|테크닉/,'figure'],[/다마고치/,'console'],[/홍삼|비타민|유산균|루테인|오메가|오쏘몰|황진단|천녹|홍이장군|홍삼원/,'pill'],[/커피믹스|모카골드/,'coffee'],[/퍼퓸|뚜왈렛|코롱/,'bottle'],[/보조배터리|어댑터|태그|펜슬|Pencil|AirTag|에어태그/,'plug'],[/워치|시계/,'watch'],[/태블릿|패드/,'tablet'],[/노트북|맥북/,'laptop'],[/모니터|TV|티비/,'monitor'],[/로봇/,'robot'],[/공기청정|가습|제습/,'purifier'],[/커피|캡슐/,'coffee'],[/청소기/,'vacuum'],[/드라이|고데기|헤어/,'dryer'],[/비타민|영양|유산균|오메가/,'pill'],[/물티슈|기저귀/,'wipes'],[/유모차/,'stroller'],[/카시트/,'seat'],[/콘솔|게임기|플레이스테이션|스위치|Xbox|ROG/,'console'],[/스니커즈|운동화|신발|삼바|2002R|^993|XT-6/,'shoe'],[/키보드/,'keyboard'],[/피규어|레고/,'figure'],[/향수|스킨|선크림|크림|세럼|화장|디바이스/,'bottle'],[/세제|견과|쉐이크|간식|식품/,'food']];
+const CATIC={'디지털':'laptop','가전':'robot','뷰티':'bottle','식품·생필품':'food','육아':'wipes','리셀형':'box'};
+const GRADE={S:['미개봉',1.12],A:['깨끗해요',1],B:['생활기스',0.86],C:['하자 있음',0.68]};
+
+/* ---------- utils ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{if(v===null||v===undefined||v==='')return null;if(typeof v==='number')return isFinite(v)?v:null;const n=Number(String(v).replace(/[^\d.\-]/g,''));return isFinite(n)&&String(v).replace(/[^\d]/g,'')!==''?n:null};
+const won=n=>n==null?'—':Math.round(n).toLocaleString('ko-KR')+'원';
+const man=n=>n>=10000?(Math.round(n/1000)/10).toLocaleString('ko-KR')+'만':Math.round(n).toLocaleString('ko-KR');
+const pct=x=>x==null?'—':(x*100).toFixed(0)+'%';
+const safeUrl=u=>/^https?:\/\//i.test(String(u||'').trim())?String(u).trim():'';
+const median=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const rng=seed=>()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+
+/* ---------- data model ---------- */
+let SRC={raw:SAMPLE,name:'샘플 데이터',sample:true};
+const saved=store.get(LS_DATA); if(saved&&saved.raw&&saved.raw.products)SRC=saved;
+let DB=build(SRC.raw);
+const LS_API='vc-api-url';
+async function boot(){
+  try{const im=await fetch('images.json',{cache:'no-cache'});if(im.ok){IMAGES=await im.json()}}catch(e){}
+  if(!saved){
+    const api=store.get(LS_API)||(window.VC_CONFIG&&window.VC_CONFIG.apiUrl)||'';
+    if(api){try{const r=await fetch(api);if(r.ok){const j=await r.json();if(j.products){SRC={raw:j,name:(j.meta&&j.meta.source)||'Apps Script API',sample:false,live:true}}}}catch(e){console.warn('API fetch failed',e)}}
+    if(SRC.sample){try{const r=await fetch('data.json',{cache:'no-cache'});if(r.ok){const j=await r.json();if(j.products&&j.products.length)SRC={raw:j,name:(j.meta&&j.meta.source)||'data.json',sample:false,bundled:true}}}catch(e){}}
+  }
+  DB=build(SRC.raw);UI.sellPid=null;render();
+}
+
+function build(raw){
+  const by={};
+  const prods=(raw.products||[]).filter(p=>String(p.product_id||'').trim()&&String(p.name||'').trim());
+  prods.forEach(p=>{const id=String(p.product_id).trim();by[id]={id,cat:CATS.includes(String(p.category).trim())?String(p.category).trim():(String(p.category||'').trim()||'기타'),name:String(p.name).trim(),brand:p.brand||'',model:p.model_no||'',option:p.option||'',list:num(p.list_price),img:(IMAGES&&IMAGES[String(p.product_id).trim()])||safeUrl(p.image_url),src:safeUrl(p.source_url),notes:p.notes||'',listFake:/list_price 임의값|model_no·list_price 임의값/.test(p.notes||''),news:[],useds:[],hist:[]}});
+  (raw.new_offers||[]).forEach(o=>{const p=by[String(o.product_id||'').trim()];const price=num(o.price);if(!p||!price)return;const ship=num(o.shipping_fee)||0;p.news.push({channel:o.channel||'기타',seller:o.seller||'',price,ship,total:price+ship,note:o.discount_note||'',stock:String(o.in_stock||'Y').trim().toUpperCase()!=='N',url:safeUrl(o.url),at:o.collected_at||''})});
+  (raw.used_offers||[]).forEach(o=>{const p=by[String(o.product_id||'').trim()];const price=num(o.price);if(!p||!price)return;const g=String(o.condition||'').trim().toUpperCase().charAt(0);p.useds.push({platform:o.platform||'중고',grade:'SABC'.includes(g)&&g?g:'A',price,status:String(o.status||'판매중').trim(),loc:o.location||'',ship:String(o.shipping_available||'').toUpperCase()==='Y',url:safeUrl(o.url),posted:o.posted_date||''})});
+  (raw.price_history||[]).forEach(h=>{const p=by[String(h.product_id||'').trim()];if(!p||!h.date)return;p.hist.push({date:String(h.date).slice(0,10),n:num(h.new_lowest),u:num(h.used_avg)})});
+  const list=Object.values(by).map(enrich);
+  return {list,by:Object.fromEntries(list.map(p=>[p.id,p]))};
+}
+function enrich(p){
+  const live=p.news.filter(o=>o.stock).sort((a,b)=>a.total-b.total);
+  p.news.sort((a,b)=>a.total-b.total);
+  const best=live[0]||null;
+  p.newLow=best?best.total:null; p.newBest=best;
+  const A=p.useds.filter(u=>u.grade==='A'),Asold=A.filter(u=>u.status==='판매완료');
+  p.usedRef=Asold.length>=2?median(Asold.map(u=>u.price)):A.length?median(A.map(u=>u.price)):p.useds.length?median(p.useds.map(u=>u.price)):null;
+  p.usedBasis=Asold.length>=2?'A급 판매완료 중간값':A.length?'A급 매물 중간값':p.useds.length?'전체 매물 중간값':'';
+  const active=p.useds.filter(u=>u.status!=='판매완료').sort((a,b)=>a.price-b.price);
+  p.usedLow=active.length?active[0]:null;
+  const goodAct=active.filter(u=>u.grade==='S'||u.grade==='A');p.usedBuy=goodAct[0]||null;
+  p.usedSave=p.newLow&&p.usedBuy?p.newLow-p.usedBuy.price:null;
+  p.sold=p.useds.filter(u=>u.status==='판매완료').length;
+  p.gradeRef={};for(const g of 'SABC'){const xs=p.useds.filter(u=>u.grade===g).map(u=>u.price);p.gradeRef[g]=xs.length?median(xs):(p.usedRef?p.usedRef*GRADE[g][1]/(GRADE[p.usedRef&&A.length?'A':'A'][1]):null)}
+  p.idx=p.newLow&&p.usedRef?p.usedRef/p.newLow:null;
+  p.resell=p.idx!=null&&p.idx>1;
+  p.disc=p.list&&p.newLow?1-p.newLow/p.list:null;
+  p.gap=p.resell?p.usedRef-p.newLow:0;
+  p.gb=p.news.find(o=>o.channel==='공구'&&!o.stock)||null;
+  let key=null;for(const [re,k] of ICRULE){if(re.test(p.name)){key=k;break}}
+  p.icon=IC[key||CATIC[p.cat]||'box'];
+  p.tile=TILE[p.cat]||['#2a2b33','#d0d2da'];
+  if(p.hist.length>=2){const pts=p.hist.sort((a,b)=>a.date<b.date?-1:1);p.history={real:true,usedFlat:pts.every(x=>x.u==null),pts}}else p.history={real:false,pts:synth(p)};
+  return p;
+}
+function synth(p){
+  if(!p.newLow)return[];
+  const r=rng(hash(p.id)),pts=[],N=13;const start=(p.list||p.newLow*1.12);const uEnd=p.usedRef;const uStart=uEnd?uEnd*(p.resell?0.85:1.12):null;
+  const end=new Date();
+  for(let i=0;i<N;i++){const t=i/(N-1);const d=new Date(end.getTime()-(N-1-i)*14*864e5);
+    const n=i===N-1?p.newLow:start+(p.newLow-start)*t+(r()-.5)*0.05*p.newLow;
+    const u=uEnd==null?null:(i===N-1?uEnd:uStart+(uEnd-uStart)*t+(r()-.5)*0.05*uEnd);
+    pts.push({date:d.toISOString().slice(0,10),n:Math.round(n/100)*100,u:u==null?null:Math.round(u/1000)*1000})}
+  return pts;
+}
+
+/* ---------- wallet ---------- */
+function getWallet(){
+  const w=store.get(LS_WALLET);
+  if(Array.isArray(w))return w.filter(h=>DB.by[h.pid]);
+  const ex=[];const pick=f=>DB.list.filter(f)[0];
+  const a=pick(p=>p.resell&&p.newLow),b=pick(p=>!p.resell&&p.cat==='디지털'&&p.newLow),c=pick(p=>!p.resell&&p.cat==='가전'&&p.newLow);
+  [[a,.94,58],[b,.97,27],[c,.93,41]].forEach(([p,m,days])=>{if(p)ex.push({pid:p.id,price:Math.round(p.newLow*m/1000)*1000,date:new Date(Date.now()-days*864e5).toISOString().slice(0,10),example:true})});
+  return ex;
+}
+function addToWallet(pid,price){
+  let w=getWallet().filter(h=>!h.example);
+  w.unshift({pid,price,date:new Date().toISOString().slice(0,10)});
+  store.set(LS_WALLET,w);
+}
+function removeFromWallet(i){let w=getWallet().filter(h=>!h.example);w.splice(i,1);store.set(LS_WALLET,w)}
+
+/* ---------- views ---------- */
+const UI={cat:'all',q:'',view:'card',sort:'save',kind:'all',sellPid:null,grade:'A',popt:1,buy:null,walletMode:'sell',sortTable:'disc'};
+function thumb(p,size){
+  const s=size?`width:${size}px;height:${size}px;border-radius:${size<70?14:18}px;`:'';
+  return `<span class="thumb" style="${s}background:${p.tile[0]}">${p.img?`<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.remove()">`:''}<svg viewBox="0 0 24 24" fill="none" stroke="${p.tile[1]}" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${p.icon}"/></svg></span>`;
+}
+function filtered(){
+  const q=UI.q.trim().toLowerCase();
+  let xs=DB.list.filter(p=>(UI.cat==='all'||p.cat===UI.cat)&&(!q||(p.name+' '+p.brand+' '+p.model+' '+p.option).toLowerCase().includes(q)));
+  const k=UI.sort;
+  const val=p=>k==='save'?(p.usedSave??-1e12):k==='recovery'?(p.idx??-9):k==='low'?-(p.newLow??1e12):k==='high'?(p.newLow??-1):0;
+  return xs.sort((a,b)=>val(b)-val(a));
+}
+const shopName=p=>p.newBest?(p.newBest.channel==='기타'?p.newBest.seller:p.newBest.channel):'';
+function vHome(){
+  const all=DB.list,xs=filtered();
+  const deals=all.filter(p=>p.usedSave>0).sort((a,b)=>b.usedSave-a.usedSave).slice(0,10);
+  const w=getWallet();const cash=w.reduce((s,h)=>s+(DB.by[h.pid].usedRef||0),0);
+  const catChips=[['all','전체'],...CATS.filter(c=>all.some(p=>p.cat===c)).map(c=>[c,c])];
+  return `
+  <section class="hero2">
+    <div class="act buy">
+      <span class="eyebrow">사기</span>
+      <h1 class="h1">필요한 물건, 가장 싸게</h1>
+      <span class="muted small">새상품 판매처 ${all.reduce((s,p)=>s+p.news.length,0)}곳과 중고 매물 ${all.reduce((s,p)=>s+p.useds.length,0)}건을 한 번에 비교해요</span>
+      <label class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a6a6b0" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">상품 검색</span><input id="q" type="search" placeholder="어떤 물건이 필요하세요?" value="${esc(UI.q)}"></label>
+    </div>
+    <a class="act sell" href="#sell">
+      <span class="eyebrow">팔기</span>
+      <h2 class="h1">안 쓰는 물건, 가장 쉽게 현금으로</h2>
+      <span class="muted small">내 지갑의 물건 ${w.length}개를 지금 중고로 팔면</span>
+      <b class="cash">${won(cash)}</b>
+      <span class="btn primary">시세 보고 팔기</span>
+    </a>
+  </section>
+  ${deals.length?`<section class="sec" style="margin-top:32px">
+    <div class="sechead"><h2 class="h2">중고로 사면 훨씬 싸요</h2><span class="muted small">상태 좋은 S·A급 판매중 매물 기준</span></div>
+    <div class="hscroll">${deals.map(p=>`<a class="rcard" href="#p-${esc(p.id)}">${thumb(p,64)}<span class="grow"><span class="ellip" style="display:block;font-weight:700">${esc(p.name)}</span><span class="muted small">새상품 ${won(p.newLow)}</span><br><b>중고 ${won(p.usedBuy.price)}</b> <span class="tag good">−${pct(p.usedSave/p.newLow)}</span></span></a>`).join('')}</div>
+  </section>`:''}
+  <section class="sec" style="margin-top:32px">
+    <div class="row" style="justify-content:space-between">
+      <h2 class="h2">전체 상품 <span class="muted small" style="font-weight:500">${xs.length}개</span></h2>
+      <div class="row" style="gap:8px">
+        <div class="seg" role="group" aria-label="보기 방식"><button data-view="card" aria-pressed="${UI.view==='card'}">카드</button><button data-view="table" aria-pressed="${UI.view==='table'}">시세표</button></div>
+        <select id="sort" aria-label="정렬" style="width:auto;min-width:170px">${[['save','중고로 아끼는 금액 순'],['low','가격 낮은 순'],['high','가격 높은 순'],['recovery','팔 때 값 잘 받는 순']].map(([k,l])=>`<option value="${k}"${UI.sort===k?' selected':''}>${l}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="chips" role="group" aria-label="카테고리">${catChips.map(([k,l])=>`<button class="chip" data-cat="${esc(k)}" aria-pressed="${UI.cat===k}">${esc(l)}</button>`).join('')}</div>
+    <div id="list">${listHtml(xs)}</div>
+  </section>`;
+}
+function listHtml(xs){
+  if(!xs.length)return `<div class="empty">조건에 맞는 상품이 없어요. 검색어나 카테고리를 바꿔보세요.</div>`;
+  if(UI.view==='table')return `<div class="tablebox"><table><thead><tr><th>상품</th><th>새상품 최저</th><th>판매처</th><th>중고 최저 (S·A급)</th><th>팔면 받는 돈</th><th>회수율</th></tr></thead><tbody>${xs.map(p=>`<tr data-go="${esc(p.id)}"><td><span class="tname">${thumb(p,40)}<span><b>${esc(p.name)}</b><br><span class="muted small">${esc(p.cat)}${p.option?' · '+esc(p.option):''}</span></span></span></td><td><b>${won(p.newLow)}</b></td><td class="muted">${esc(shopName(p)||'—')}</td><td class="${p.usedSave>0?'good':''}">${p.usedBuy?won(p.usedBuy.price):'—'}</td><td>${won(p.usedRef)}</td><td class="muted">${pct(p.idx)}</td></tr>`).join('')}</tbody></table></div>`;
+  return `<div class="grid">${xs.map(p=>`<a class="pcard" href="#p-${esc(p.id)}"><span style="position:relative;display:block">${thumb(p)}<span class="ov">${p.usedSave>0?`<span class="tag good">중고로 −${pct(p.usedSave/p.newLow)}</span>`:p.usedSave!=null&&p.usedSave<0?`<span class="tag new">새상품이 더 싸요</span>`:''}</span></span><span class="nm">${esc(p.name)}</span><span class="pr"><span class="lbl n">새</span><b>${won(p.newLow)}</b></span><span class="pr" style="margin-top:-4px"><span class="lbl u">중고</span><span class="small" style="color:#d6d6dd">${p.usedBuy?won(p.usedBuy.price)+'부터':'판매중 매물 없음'}</span></span>${p.usedRef?`<span class="muted small" style="margin-top:-2px">팔면 약 ${man(p.usedRef)}원</span>`:''}</a>`).join('')}</div>`;
+}
+function chartSvg(p){
+  const pts=p.history.pts;if(pts.length<2)return `<div class="empty small">가격 이력이 없어요</div>`;
+  const W=600,H=220,L=50,R=12,T=14,B=26;
+  const vals=pts.flatMap(x=>[x.n,x.u]).concat(p.history.usedFlat&&p.usedRef?[p.usedRef]:[]).filter(v=>v!=null);let lo=Math.min(...vals),hi=Math.max(...vals);const pad=(hi-lo)*0.12||hi*0.05;lo-=pad;hi+=pad;
+  const X=i=>L+(W-L-R)*i/(pts.length-1),Y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
+  const line=k=>pts.map((x,i)=>x[k]==null?null:`${X(i).toFixed(1)},${Y(x[k]).toFixed(1)}`).filter(Boolean).join(' ');
+  const ticks=[0,1,2,3].map(i=>lo+(hi-lo)*i/3);
+  const last=pts[pts.length-1];
+  let cross='';for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];if(a.u!=null&&b.u!=null&&a.n!=null&&b.n!=null&&(a.u-a.n)*(b.u-b.n)<0){cross=`<circle cx="${X(i)}" cy="${Y(b.u)}" r="6" fill="none" stroke="#f4f4f6" stroke-width="2"/>`;break}}
+  const area=`${line('n')} ${X(pts.length-1)},${H-B} ${X(0)},${H-B}`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="새상품과 중고 가격 추이">
+  ${ticks.map(t=>`<line x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}" stroke="#26262e"/><text x="${L-8}" y="${Y(t)+4}" text-anchor="end">${man(t)}</text>`).join('')}
+  <polygon points="${area}" fill="#2f7bf0" fill-opacity=".08"/>
+  <polyline points="${line('n')}" fill="none" stroke="#6f9dff" stroke-width="2.5" stroke-linejoin="round"/>
+  <polyline points="${line('u')}" fill="none" stroke="#ffbf80" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round"/>
+  ${cross}
+  ${p.history.usedFlat&&p.usedRef?`<line x1="${L}" x2="${W-R}" y1="${Y(p.usedRef)}" y2="${Y(p.usedRef)}" stroke="#ffbf80" stroke-width="2" stroke-dasharray="7 5"/><text x="${W-R}" y="${Y(p.usedRef)-6}" text-anchor="end" style="fill:#ffbf80">현재 중고 시세 ${man(p.usedRef)}</text>`:''}
+  ${last.n!=null?`<circle cx="${X(pts.length-1)}" cy="${Y(last.n)}" r="4.5" fill="#6f9dff"/>`:''}${last.u!=null?`<circle cx="${X(pts.length-1)}" cy="${Y(last.u)}" r="4.5" fill="#ffbf80"/>`:''}
+  <text x="${L}" y="${H-6}">${esc(pts[0].date.slice(0,7))}</text><text x="${W-R}" y="${H-6}" text-anchor="end">${esc(last.date)}</text>
+  </svg>`;
+}
+function vDetail(id){
+  const p=DB.by[id];if(!p)return `<div class="empty">상품을 찾을 수 없어요. <a href="#home">홈으로</a></div>`;
+  const offers=[...p.news.filter(o=>o.channel!=='공구'||o.stock).map(o=>({t:'new',badge:'새',name:o.channel==='기타'&&o.seller?o.seller:o.channel,sub:[o.channel!=='기타'&&o.seller&&o.seller!==o.channel?o.seller:'',o.ship?'배송비 '+won(o.ship):'무료배송',o.note,o.stock?'':'품절'].filter(Boolean).join(' · '),price:o.total,url:o.url,dim:!o.stock})),
+    ...p.useds.map(u=>({t:'used',badge:u.grade,name:(u.platform||'중고')+(u.loc?' · '+u.loc:''),sub:[GRADE[u.grade][0],u.status,u.ship?'택배 가능':'',u.posted].filter(Boolean).join(' · '),price:u.price,url:u.url,dim:u.status==='판매완료'}))]
+    .filter(o=>UI.kind==='all'||o.t===UI.kind).sort((a,b)=>(a.dim-b.dim)||(a.price-b.price));
+  const firstLive=offers.find(o=>!o.dim);
+  let rec=null;
+  if(p.newLow&&p.usedBuy&&p.usedSave>0){const u=p.usedBuy;rec={label:'가장 싸게 사는 방법',title:`중고 ${u.grade}급이 새상품보다 ${won(p.usedSave)} 싸요`,sub:`${esc(u.platform)}${u.loc?' · '+esc(u.loc):''} · ${GRADE[u.grade][0]} · 새상품 최저 ${won(p.newLow)}`,price:u.price,url:u.url,cta:'중고 매물 보러 가기'}}
+  else if(p.newLow){rec={label:'가장 싸게 사는 방법',title:p.usedBuy?`새상품이 가장 싸요 · 상태 좋은 중고보다 ${won(-p.usedSave)} 저렴`:'새상품 최저가로 사세요',sub:`${esc(shopName(p))}${p.newBest&&p.newBest.ship?' · 배송비 포함':' · 무료배송'}`,price:p.newLow,url:p.newBest&&p.newBest.url,cta:`${esc(shopName(p))}에서 사기`}}
+  return `
+  <a href="#home" class="muted small" style="text-decoration:none">← 사기</a>
+  <div class="detail" style="margin-top:12px">
+    <div class="sec">
+      <span style="position:relative;display:block">${thumb(p,0,'aspect-ratio:1/1;width:100%;max-width:100%;')}</span>
+      <div class="card"><div class="row" style="justify-content:space-between"><h2 class="h2" style="font-size:17px">가격 흐름</h2><span class="muted small">${p.history.real?(p.history.usedFlat?'다나와 월별 최저가 · 중고는 현재 시세':'시트의 price_history'):'데모용 가상 추이'}</span></div>
+      <div style="margin-top:10px">${chartSvg(p)}</div>
+      <div class="legend" style="margin-top:6px"><span><i style="background:#6f9dff"></i>새상품 최저가</span><span><i style="background:#ffbf80"></i>중고 시세</span></div></div>
+    </div>
+    <div class="sec">
+      <div><span class="muted small">${esc(p.brand)} · ${esc(p.cat)}</span><h1 class="h1" style="margin-top:2px">${esc(p.name)}</h1><span class="muted small">${[p.option,p.model].filter(Boolean).map(esc).join(' · ')}${p.list?' · 정가 '+won(p.list)+(p.listFake?' (데모용 임의값)':''):''}</span></div>
+      ${rec?`<div class="rec"><span class="small" style="color:var(--blueInk);font-weight:700">${rec.label}</span><b style="font-size:28px;letter-spacing:-.6px">${won(rec.price)}</b><span style="font-weight:700">${rec.title}</span><span class="muted small">${rec.sub}</span>${rec.url?`<a class="btn primary block" target="_blank" rel="noopener" href="${esc(rec.url)}">${rec.cta}</a>`:`<span class="btn primary block" aria-disabled="true" style="opacity:.6">${rec.cta} · 링크 없음</span>`}</div>`:''}
+      <div class="prices">
+        <div class="ptile"><span class="muted small">새상품 최저</span><b>${won(p.newLow)}</b><span class="small muted">${esc(shopName(p))}${p.disc!=null&&!p.listFake?' · 정가 대비 '+(p.disc>0?'−':'+')+Math.abs(p.disc*100).toFixed(1)+'%':''}</span></div>
+        <div class="ptile"><span class="muted small">중고 최저 (S·A급)</span><b>${p.usedBuy?won(p.usedBuy.price):'—'}</b><span class="small muted">판매중 ${p.useds.filter(u=>u.status!=='판매완료').length}건 · 시세 ${won(p.usedRef)}</span></div>
+      </div>
+      ${p.gb?`<div class="card row"><span class="tag used">공구 예정</span><span class="grow small">${esc(p.gb.seller)} · ${esc(p.gb.note||'오픈 예정')}</span><b class="good">${won(p.gb.total)}</b></div>`:''}
+      <div class="card" style="padding:18px 16px 8px">
+        <div class="row" style="justify-content:space-between;padding:0 4px 8px"><h2 class="h2" style="font-size:17px">전체 가격 비교</h2>
+          <div class="seg" role="group" aria-label="새상품 또는 중고">${[['all','전체'],['new','새상품'],['used','중고']].map(([k,l])=>`<button data-kind="${k}" aria-pressed="${UI.kind===k}">${l}</button>`).join('')}</div></div>
+        ${offers.length?offers.map(o=>`<${o.url?'a target="_blank" rel="noopener" href="'+esc(o.url)+'"':'div'} class="offer" style="opacity:${o.dim?.5:1}"><span class="badge" style="background:${o.t==='new'?'#1b2a45':'#45301c'};color:${o.t==='new'?'#8fb4ff':'#ffbf80'}">${esc(o.badge)}</span><span class="grow"><span class="ellip" style="display:block;font-weight:700">${esc(o.name)}</span><span class="muted small ellip" style="display:block">${esc(o.sub)}</span></span><span style="text-align:right"><b style="font-size:16px" class="${o===firstLive?'good':''}">${won(o.price)}</b><br><span class="small ${o===firstLive?'good':'muted'}">${o===firstLive?'최저가':o.dim?'거래 완료':'+'+(o.price-firstLive.price).toLocaleString('ko-KR')}</span></span></${o.url?'a':'div'}>`).join(''):'<div class="empty small">이 조건의 판매처가 없어요</div>'}
+      </div>
+      <div class="sellbox">
+        <span class="small" style="color:var(--used);font-weight:700">이미 갖고 계신가요?</span>
+        <span style="font-size:17px;font-weight:800">지금 팔면 약 ${won(p.usedRef)}</span>
+        <span class="small muted">${p.usedRef?`새상품 최저가의 ${pct(p.idx)} · 최근 거래 완료 ${p.sold}건 기준`:'아직 거래 시세가 없어요'}</span>
+        <div class="row" style="gap:8px"><a class="btn primary" href="#sell" id="goSell" data-pid="${esc(p.id)}" style="flex:1 1 140px">시세대로 팔기</a><button class="btn" id="buyNew" data-pid="${esc(p.id)}" style="flex:1 1 140px" ${p.newLow?'':'disabled'}>샀어요 · 지갑에 담기</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+function vWallet(){
+  const w=getWallet();const ex=w.length&&w[0].example;
+  const rows=w.map((h,i)=>{const p=DB.by[h.pid];const days=Math.max(1,Math.round((Date.now()-new Date(h.date))/864e5));return{h,i,p,days,sell:p.usedRef,gain:p.usedRef!=null?p.usedRef-h.price:null,saved:p.list?p.list-h.price:null,swap:p.resell?p.gap:0}});
+  const sumBuy=rows.reduce((s,r)=>s+r.h.price,0),sumSell=rows.reduce((s,r)=>s+(r.sell||0),0),sumSaved=rows.reduce((s,r)=>s+Math.max(0,r.saved||0),0),sumList=rows.reduce((s,r)=>s+(r.p.list||r.h.price),0);
+  const swaps=rows.filter(r=>r.swap>0);
+  const m=UI.walletMode;
+  const sorted=m==='sell'?[...rows].sort((a,b)=>(b.sell/b.h.price)-(a.sell/a.h.price)):rows;
+  return `
+  <div class="sec">
+    <h1 class="h1">내 지갑</h1>
+    ${ex?`<div class="notice">예시 보유 내역이에요. 상품 상세에서 "샀어요"를 누르면 내 기록으로 바뀌어요. 기록은 이 브라우저에만 저장돼요.</div>`:''}
+    ${!rows.length?`<div class="empty">아직 담은 물건이 없어요. 상품 상세에서 "샀어요"를 눌러 기록해보세요.</div>`:`
+    <div class="seg" role="group" aria-label="보기"><button data-wm="sell" aria-pressed="${m==='sell'}">지금 팔면 받을 돈</button><button data-wm="save" aria-pressed="${m==='save'}">아낀 돈</button></div>
+    <div><span class="muted">${m==='sell'?`내 물건 ${rows.length}개, 지금 중고로 팔면`:'정가 대비 아낀 돈'}</span>
+    <div style="font-size:36px;font-weight:800;letter-spacing:-1px">${m==='sell'?won(sumSell):won(sumSaved)}</div>
+    <span style="font-weight:700" class="${m==='sell'?'up':'good'}">${m==='sell'?`산 값 ${won(sumBuy)}의 ${pct(sumSell/sumBuy)} 회수`:`수익률 +${sumList?((sumSaved/sumList)*100).toFixed(1):0}%`}</span></div>
+    <div class="wgrid">${sorted.map(r=>{const g=r.gain;return `<div class="pcard" style="gap:6px"><a href="#p-${esc(r.p.id)}" style="position:relative;display:block;text-decoration:none">${thumb(r.p)}<span class="ov">${m==='sell'?(g>0?`<span class="tag hot">산 값보다 +${Math.round(g/r.h.price*100)}%</span>`:`<span class="tag">회수 ${pct(r.sell/r.h.price)}</span>`):(r.saved>0?`<span class="tag hot">+${Math.round(r.saved/(r.p.list)*100)}%</span>`:'')}</span></a>
+      <b class="ellip">${esc(r.p.name)}</b>
+      <span class="muted small">${esc(r.h.date)} · ${won(r.h.price)}에 삼</span>
+      ${m==='sell'?(r.sell==null?`<span class="small muted">중고 시세 없음</span>`:g>0?`<span class="small good" style="font-weight:700">산 값보다 ${won(g)} 더 받아요</span>`:`<span class="small muted">지금 팔면 ${won(r.sell)} · 하루 ${won(-g/r.days)}꼴</span>`):(r.saved!=null?`<span class="small good" style="font-weight:700">정가보다 ${won(r.saved)} 아낌</span>`:`<span class="small muted">정가 정보 없음</span>`)}
+      <span class="row" style="gap:6px">${r.sell!=null?`<a class="tag" href="#sell" data-sellpid="${esc(r.p.id)}" data-buy="${r.h.price}" style="text-decoration:none;background:var(--blue);color:#fff">바로 팔기</a>`:''}${r.h.example?'<span class="tag">예시</span>':`<button class="tag" data-del="${r.i}" style="border:0;cursor:pointer">삭제</button>`}</span>
+    </div>`}).join('')}</div>`}
+  </div>`;
+}
+
+function vSell(){
+  const wal=getWallet();
+  if(!UI.sellPid||!DB.by[UI.sellPid]){const f=wal[0]?wal[0].pid:(DB.list.find(p=>p.usedRef)||DB.list[0]||{}).id;UI.sellPid=f;UI.buy=wal[0]?wal[0].price:null}
+  const p=DB.by[UI.sellPid];if(!p)return `<div class="empty">상품 데이터가 없어요. <a href="#data">데이터</a>에서 시트를 불러와 주세요.</div>`;
+  const ref=p.gradeRef[UI.grade];const opts=[['빨리 팔기',0.92,'시세보다 8% 낮게 · 가장 빨리 현금화'],['시세대로',1,'최근 거래 중간값'],['조금 높게',1.07,'시세보다 7% 높게 · 시간이 더 걸릴 수 있어요']];
+  const sell=ref?Math.round(ref*opts[UI.popt][1]/1000)*1000:null;
+  const buy=UI.buy??(wal.find(h=>h.pid===p.id)||{}).price??p.newLow;
+  const gain=sell!=null&&buy?sell-buy:null;
+  const inWal=new Set(wal.map(h=>h.pid));
+  const options=[...DB.list].sort((a,b)=>(inWal.has(b.id)-inWal.has(a.id))||a.name.localeCompare(b.name,'ko'));
+  return `
+  <h1 class="h1">팔기</h1>
+  <p class="muted" style="margin:4px 0 20px">최근 거래 시세로 가격을 정해요. 빨리 현금이 필요하면 '빨리 팔기'를 고르세요. 데모라서 실제로 등록되지는 않아요.</p>
+  <div class="two">
+    <div class="sec">
+      <label class="f" for="sellPid">어떤 물건을 팔까요?<select id="sellPid">${options.map(o=>`<option value="${esc(o.id)}"${o.id===p.id?' selected':''}>${inWal.has(o.id)?'[내 지갑] ':''}${esc(o.name)}${o.option?' · '+esc(o.option):''}</option>`).join('')}</select></label>
+      <div class="row">${thumb(p,72)}<span><b style="font-size:17px">${esc(p.name)}</b><br><span class="muted small">새상품 최저 ${won(p.newLow)} · 중고 ${p.useds.length}건</span></span></div>
+      <div><span class="muted small">상태</span><div class="grades" style="margin-top:6px">${'SABC'.split('').map(g=>`<button data-grade="${g}" aria-pressed="${UI.grade===g}"><b>${g}급</b><span class="small">${GRADE[g][0]}</span></button>`).join('')}</div></div>
+      <div><span class="muted small">가격 · ${UI.grade}급 시세 ${won(ref)}</span><div class="radio" style="margin-top:6px">${opts.map(([l,m,h],i)=>`<button class="opt" data-popt="${i}" aria-pressed="${UI.popt===i}"><span class="grow"><b>${l}</b><br><span class="muted small">${h}</span></span><b style="font-size:17px">${ref?won(Math.round(ref*m/1000)*1000):'—'}</b></button>`).join('')}</div></div>
+      <label class="f" for="buyIn">산 가격 (원)<input id="buyIn" type="number" inputmode="numeric" min="0" step="1000" value="${buy??''}"></label>
+    </div>
+    <div class="sec">
+      <div class="card sec" style="gap:10px">
+        <span class="muted small">받을 수 있는 돈</span><b style="font-size:32px;letter-spacing:-.8px">${won(sell)}</b>
+        ${gain==null?`<b style="font-size:22px">시세 정보가 부족해요</b>`:gain>0?`<b style="font-size:16px" class="good">산 값보다 ${won(gain)} 더 받아요 (+${Math.round(gain/buy*100)}%)</b>`:`<b style="font-size:16px">산 가격의 ${pct(sell/buy)} 회수 · ${won(-gain)} 쓴 셈</b>`}
+        <div class="kv"><span class="muted">산 가격</span><span>${won(buy)}</span><span class="muted">팔 가격</span><span style="font-weight:700">${won(sell)}</span><span class="muted">지금 새상품 최저가</span><span>${won(p.newLow)}</span></div>
+      </div>
+      <button class="btn primary block" id="listIt" ${sell?'':'disabled'}>${sell?won(sell)+'에 매물 등록하기':'가격을 정할 수 없어요'}</button>
+    </div>
+  </div>`;
+}
+
+function vData(rep){
+  const r=DB.list;
+  return `
+  <h1 class="h1">데이터</h1>
+  <p class="muted" style="margin:4px 0 20px">지금 보는 데이터: <b style="color:var(--fg)">${esc(SRC.name)}</b> · 상품 ${r.length}개 · 새상품 판매처 ${r.reduce((s,p)=>s+p.news.length,0)}곳 · 중고 매물 ${r.reduce((s,p)=>s+p.useds.length,0)}건 · 가격 이력 ${r.filter(p=>p.history.real).length}개 상품</p>
+  <div class="two">
+    <div class="sec">
+      <div class="drop" id="drop">
+        <b style="font-size:17px">구글 시트를 .xlsx로 받아서 여기에 놓으세요</b>
+        <span class="muted small">구글 시트에서 파일 → 다운로드 → Microsoft Excel(.xlsx)</span>
+        <label class="btn primary" for="file" style="cursor:pointer">파일 선택</label>
+        <input id="file" type="file" accept=".xlsx,.xls" hidden>
+      </div>
+      <div id="report">${rep||''}</div>
+      <label class="f" for="apiUrl">Apps Script 웹 앱 URL (선택)<input id="apiUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(store.get(LS_API)||'')}" style="background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:12px;min-height:48px;padding:0 12px;font:inherit"></label><span class="small muted">기본값은 config.js의 apiUrl이에요. 비워두면 같이 배포한 data.json을 써요.</span><div class="row"><button class="btn" id="saveApi">URL 저장 후 다시 불러오기</button>${saved||SRC.live?'<button class="btn" id="reset">기본 데이터로 되돌리기</button>':''}<button class="btn" id="resetWallet">내 지갑 기록 지우기</button></div>
+    </div>
+    <div class="card sec" style="gap:10px">
+      <h2 class="h2" style="font-size:17px">시트 형식</h2>
+      <span class="muted small">시트 이름과 1행 열 이름이 같아야 해요. 굵은 열은 필수예요. 가격은 원 단위 숫자.</span>
+      ${Object.entries(SCHEMA).map(([s,cols])=>`<div><b>${s}</b>${s==='price_history'?' <span class="muted small">(선택)</span>':''}<div class="small muted" style="margin-top:2px">${cols.map(c=>REQUIRED[s].includes(c)?`<b style="color:var(--fg)">${c}</b>`:c).join(', ')}</div></div>`).join('')}
+      <span class="small muted">계산 방식: 새상품 최저가 = 재고 있는 판매처 중 (판매가 + 배송비) 최소 · 중고 시세 = A급 판매완료 중간값(2건 이상일 때), 없으면 A급 매물 중간값 · 회수율 = 중고 시세 ÷ 새상품 최저가 · 중고 최저 = S·A급 판매중 매물 중 최저가.</span>
+      <span class="small muted">이미지: 미리보기 환경에서는 외부 이미지 주소를 불러올 수 없어 카테고리 아이콘으로 대신 보여줘요.</span>
+    </div>
+  </div>`;
+}
+
+/* ---------- import ---------- */
+function handleFile(file){
+  if(!file)return;
+  if(typeof XLSX==='undefined'){render(`<p class="err">엑셀 읽기 도구를 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.</p>`);return}
+  const fr=new FileReader();
+  fr.onload=e=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      const raw={},lines=[];let fatal=false;
+      for(const s of Object.keys(SCHEMA)){
+        const name=wb.SheetNames.find(n=>n.trim().toLowerCase()===s);
+        if(!name){raw[s]=[];lines.push(s==='price_history'?`<li class="warn">${s} 시트 없음 (선택 항목이라 가상 추이로 대신해요)</li>`:`<li class="${s==='products'?'err':'warn'}">${s} 시트를 찾지 못했어요</li>`);if(s==='products')fatal=true;continue}
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:'',raw:true}).map(r=>Object.fromEntries(Object.entries(r).map(([k,v])=>[String(k).trim(),typeof v==='string'?v.trim():v])));
+        const cols=rows.length?Object.keys(rows[0]):[];
+        const miss=REQUIRED[s].filter(c=>!cols.includes(c));
+        if(miss.length){lines.push(`<li class="err">${s}: 필수 열 없음 (${miss.join(', ')})</li>`);if(s==='products')fatal=true}
+        const clean=rows.filter(r=>!String(r.product_id||'').startsWith('EX-'));
+        raw[s]=clean;
+        const badPrice=['new_offers','used_offers'].includes(s)?clean.filter(r=>num(r.price)==null).length:0;
+        lines.push(`<li class="ok">${s}: ${clean.length}행${badPrice?` <span class="warn">· 가격이 숫자가 아닌 행 ${badPrice}개 제외</span>`:''}</li>`);
+      }
+      if(fatal){render(`<div class="card report"><b>불러오지 못했어요</b><ul>${lines.join('')}</ul></div>`);return}
+      const test=build(raw);
+      const ids=new Set(test.list.map(p=>p.id));
+      const orphan=[...raw.new_offers,...raw.used_offers].filter(r=>!ids.has(String(r.product_id||'').trim())).length;
+      const noNew=test.list.filter(p=>!p.newLow).length,noUsed=test.list.filter(p=>!p.usedRef).length;
+      if(orphan)lines.push(`<li class="warn">products에 없는 product_id를 가진 가격 행 ${orphan}개 (무시함)</li>`);
+      if(noNew)lines.push(`<li class="warn">재고 있는 새상품 판매처가 없는 상품 ${noNew}개</li>`);
+      if(noUsed)lines.push(`<li class="warn">중고 매물이 없는 상품 ${noUsed}개</li>`);
+      lines.push(`<li class="ok">중고가 새상품보다 싼 상품 ${test.list.filter(p=>p.usedSave>0).length}개</li>`);
+      if(!test.list.length){render(`<div class="card report"><b>상품이 0개예요</b><ul>${lines.join('')}</ul></div>`);return}
+      SRC={raw,name:file.name,sample:false};DB=test;
+      const ok=store.set(LS_DATA,SRC);
+      UI.sellPid=null;
+      render(`<div class="card report"><b class="ok">${esc(file.name)} 불러옴 · 상품 ${test.list.length}개</b><ul>${lines.join('')}</ul>${ok?'':'<span class="small warn">브라우저 저장소를 쓸 수 없어 새로고침하면 샘플로 돌아가요.</span>'}<a class="btn primary" href="#home" style="margin-top:8px">홈에서 보기</a></div>`);
+    }catch(err){render(`<div class="card"><b class="err">파일을 읽지 못했어요</b><p class="small muted">.xlsx 형식인지 확인해 주세요. (${esc(err.message)})</p></div>`)}
+  };
+  fr.readAsArrayBuffer(file);
+}
+
+/* ---------- router ---------- */
+function route(){const h=location.hash.replace('#','');if(h.startsWith('p-'))return['detail',h.slice(2)];return[['home','wallet','sell','data'].includes(h)?h:'home']}
+function render(rep){
+  const [r,arg]=route();
+  document.querySelectorAll('.nav a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.r===r||(r==='detail'&&a.dataset.r==='home'))||a.setAttribute('aria-current',a.dataset.r===r||(r==='detail'&&a.dataset.r==='home')?'page':''));
+  document.querySelectorAll('.nav a').forEach(a=>{const on=a.dataset.r===r||(r==='detail'&&a.dataset.r==='home');on?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
+  $('#src').innerHTML=SRC.sample?'<b>샘플 데이터</b> · 시트 불러오기':`<b>${SRC.live?'실시간':'시트'}</b> · ${esc(SRC.name)} · ${DB.list.length}개`;
+  const app=$('#app');
+  app.innerHTML=r==='detail'?vDetail(arg):r==='wallet'?vWallet():r==='sell'?vSell():r==='data'?vData(typeof rep==='string'?rep:''):vHome();
+  if(r==='data')bindDrop();
+}
+function bindDrop(){
+  const d=$('#drop'),f=$('#file');if(!d)return;
+  f.onchange=()=>handleFile(f.files[0]);
+  d.ondragover=e=>{e.preventDefault();d.classList.add('over')};d.ondragleave=()=>d.classList.remove('over');
+  d.ondrop=e=>{e.preventDefault();d.classList.remove('over');handleFile(e.dataTransfer.files[0])};
+}
+let lastRoute='';
+window.addEventListener('hashchange',()=>{const r=location.hash;if(r!==lastRoute){lastRoute=r;render();window.scrollTo(0,0)}});
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,a,tr');if(!t)return;
+  const d=t.dataset;
+  if(d.cat){UI.cat=d.cat;render();return}
+  if(d.view){UI.view=d.view;$('#list').innerHTML=listHtml(filtered());document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===UI.view));return}
+  if(d.go){location.hash='p-'+d.go;return}
+  if(d.kind){UI.kind=d.kind;render();return}
+  if(d.wm){UI.walletMode=d.wm;render();return}
+  if(d.grade){UI.grade=d.grade;render();return}
+  if(d.popt){UI.popt=+d.popt;render();return}
+  if(d.del){removeFromWallet(+d.del);render();toast('지갑에서 뺐어요');return}
+  if(d.sellpid){UI.sellPid=d.sellpid;UI.buy=+d.buy||null;return}
+  if(t.id==='goSell'){UI.sellPid=d.pid;UI.buy=null;return}
+  if(t.id==='buyNew'){const p=DB.by[d.pid];addToWallet(p.id,p.newLow);toast(`${p.name}을(를) ${won(p.newLow)}에 산 것으로 기록했어요`);return}
+  if(t.id==='listIt'){toast('데모라서 실제로 등록되지는 않아요. 등록 화면 흐름만 확인할 수 있어요.');return}
+  if(t.id==='reset'){store.del(LS_DATA);store.del(LS_API);location.reload();return}
+  if(t.id==='saveApi'){const v=($('#apiUrl').value||'').trim();if(v&&!/^https:\/\//.test(v)){toast('https:// 로 시작하는 주소를 넣어주세요');return}v?store.set(LS_API,v):store.del(LS_API);store.del(LS_DATA);location.reload();return}
+  if(t.id==='resetWallet'){store.del(LS_WALLET);render();toast('지갑 기록을 지웠어요');return}
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='q'){UI.q=e.target.value;$('#list').innerHTML=listHtml(filtered())}
+  if(e.target.id==='buyIn'){UI.buy=num(e.target.value);const pos=e.target.selectionStart;render();const el=$('#buyIn');if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(_){}}}
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='sort'){UI.sort=e.target.value;$('#list').innerHTML=listHtml(filtered())}
+  if(e.target.id==='sellPid'){UI.sellPid=e.target.value;const w=getWallet().find(h=>h.pid===UI.sellPid);UI.buy=w?w.price:null;render()}
+});
+lastRoute=location.hash;render();boot();
+</script>
+
+</body>
+</html>
