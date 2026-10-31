@@ -1,5 +1,5 @@
 // 상품 이미지 프록시: 허용한 이미지 서버만 받아서 CDN에 30일 캐시해요.
-const ALLOWED = [/^https:\/\/img\.danuri\.io\//, /^https:\/\/img\.danawa\.com\//, /^https:\/\/shopping-phinf\.pstatic\.net\//];
+const ALLOWED = [/^https:\/\/img\.danuri\.io\//, /^https:\/\/img\.danawa\.com\//, /^https:\/\/shopping-phinf\.pstatic\.net\//, /^https:\/\/[a-z0-9-]+\.coupangcdn\.com\//];
 
 export default async function handler(req, res) {
   const u = String(req.query.u || '');

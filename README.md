@@ -43,3 +43,15 @@ npx serve .
 
 - 실시간: `apps-script/Code.gs`를 시트에 설치 → 웹 앱 배포 → URL을 `config.js`의 `apiUrl`에 넣고 푸시
 - 스냅샷: 시트 메뉴 **VeryCheap → data.json을 Drive에 저장** → 받은 파일로 `data.json` 교체 후 푸시
+
+## 쿠팡 파트너스 연동
+
+1. **가입 3단계 "웹사이트 목록"**: Vercel 대표 주소(예: `https://verycheap-xxx.vercel.app`)를 넣어요.
+2. **가입 후 링크 만들기**: 파트너스 대시보드 → 링크 생성에서 쿠팡 상품 URL을 넣으면 `https://link.coupang.com/a/…` 링크가 나와요.
+3. **`coupang.json`에 넣기**: `coupang.example.json` 형식대로 `items`에 추가해요.
+   - `product_id`를 우리 상품 ID(예: `DIG-010`)와 맞추면 그 상품 상세에 "쿠팡에서 보기" 버튼이 생겨요.
+   - `product_id` 없이 넣으면 홈의 "쿠팡 오늘의 최저가"에만 보여요.
+   - 배너를 쓰려면 파트너스 배너 코드의 iframe `src` 주소를 `banner_iframe`에 넣어요.
+4. **푸시 → 배포 → 스크린샷**: 홈의 쿠팡 영역(고지 문구 포함)이 보이게 캡처해서 파트너스 마이페이지에 올리면 최종 승인 심사에 써요.
+
+`items`가 비어 있으면 쿠팡 영역은 화면에 나오지 않아요. 고지 문구("쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다")는 하단과 쿠팡 영역에 항상 표시돼요.

@@ -1,0 +1,13 @@
+{
+  "banner_iframe": "https://coupa.ng/여기에-배너-코드의-src",
+  "items": [
+    {
+      "product_id": "DIG-010",
+      "name": "Apple 에어팟 4세대",
+      "price": 179000,
+      "badge": "로켓배송",
+      "image": "https://thumbnail.coupangcdn.com/여기에-상품-이미지-주소",
+      "url": "https://link.coupang.com/a/여기에-파트너스-링크"
+    }
+  ]
+}
