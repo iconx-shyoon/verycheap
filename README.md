@@ -8,16 +8,20 @@
 |---|---|
 | `index.html` | 웹앱 전체 (홈 · 상품 상세 · 내 지갑 · 팔기 · 데이터) |
 | `data.json` | 구글 시트 `VeryCheap_demo_data_20261029` 스냅샷 (상품 180 · 새상품 878 · 중고 1,559 · 가격 이력 1,065) |
-| `config.js` | `apiUrl`에 Apps Script 웹 앱 URL을 넣으면 시트에서 실시간으로 읽음 |
+| `config.js` | 이미지 프록시 경로(`imgProxy`), 선택적으로 Apps Script URL(`apiUrl`) |
+| `api/img.js` | 상품 이미지 프록시 (Vercel Function, 30일 CDN 캐시) |
 | `apps-script/Code.gs` | 시트에 붙이는 Apps Script (JSON API, 캐시, Drive 내보내기, 이미지 썸네일) |
 | `vercel.json` | 캐시 헤더 |
 
 ## 데이터 불러오는 순서
 
-1. 데이터 탭에서 올린 .xlsx (브라우저에 저장된 경우)
-2. `config.js`의 `apiUrl` (또는 데이터 탭에서 저장한 URL)
-3. `data.json`
-4. 내장 샘플 데이터
+1. `config.js`의 `apiUrl` (설정한 경우)
+2. `data.json`
+3. 내장 샘플 데이터
+
+## 상품 이미지
+
+`images.json`(상품 ID → 이미지 주소)이 있으면 그걸 먼저 쓰고, 없으면 원본 이미지 URL을 `/api/img` 프록시로 불러와요. 둘 다 실패하면 카테고리 아이콘을 보여줘요.
 
 ## 로컬 실행
 
