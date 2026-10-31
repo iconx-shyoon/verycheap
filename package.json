@@ -1,0 +1,6 @@
+{
+  "name": "verycheap-web",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" }
+}
